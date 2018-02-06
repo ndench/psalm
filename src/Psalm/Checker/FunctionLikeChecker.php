@@ -109,7 +109,7 @@ abstract class FunctionLikeChecker extends SourceChecker implements StatementsSo
      */
     public function analyze(Context $context, Context $global_context = null, $add_mutations = false)
     {
-        /** @var array<PhpParser\Node\Expr|PhpParser\Node\Stmt> */
+        /** @var array<PhpParser\Node\Stmt> */
         $function_stmts = $this->function->getStmts() ?: [];
 
         $hash = null;
@@ -183,11 +183,11 @@ abstract class FunctionLikeChecker extends SourceChecker implements StatementsSo
 
             $overridden_method_ids = $codebase->methods->getOverriddenMethodIds($method_id);
 
-            if ($this->function->name === '__construct') {
+            if ($this->function->name->name === '__construct') {
                 $context->inside_constructor = true;
             }
 
-            if ($overridden_method_ids && $this->function->name !== '__construct') {
+            if ($overridden_method_ids && $this->function->name->name !== '__construct') {
                 foreach ($overridden_method_ids as $overridden_method_id) {
                     $parent_method_storage = $codebase->methods->getStorage($overridden_method_id);
 
@@ -1027,7 +1027,7 @@ abstract class FunctionLikeChecker extends SourceChecker implements StatementsSo
         if ($this->function instanceof Function_) {
             $namespace = $this->source->getNamespace();
 
-            return ($namespace ? strtolower($namespace) . '\\' : '') . strtolower($this->function->name);
+            return ($namespace ? strtolower($namespace) . '\\' : '') . strtolower($this->function->name->name);
         }
 
         return $this->getFilePath() . ':' . $this->function->getLine() . ':-:closure';
@@ -1157,10 +1157,11 @@ abstract class FunctionLikeChecker extends SourceChecker implements StatementsSo
             return null;
         }
 
-        $is_to_string = $this->function instanceof ClassMethod && strtolower($this->function->name) === '__tostring';
+        $is_to_string = $this->function instanceof ClassMethod
+            && strtolower($this->function->name->name) === '__tostring';
 
         if ($this->function instanceof ClassMethod &&
-            substr($this->function->name, 0, 2) === '__' &&
+            substr($this->function->name->name, 0, 2) === '__' &&
             !$is_to_string
         ) {
             // do not check __construct, __set, __get, __call etc.

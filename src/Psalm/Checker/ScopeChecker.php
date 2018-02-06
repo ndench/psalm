@@ -11,7 +11,7 @@ class ScopeChecker
     const ACTION_NONE = 'NONE';
 
     /**
-     * @param   array<PhpParser\Node>   $stmts
+     * @param   array<PhpParser\Node\Stmt>   $stmts
      *
      * @return  bool
      */
@@ -67,7 +67,7 @@ class ScopeChecker
 
             if ($stmt instanceof PhpParser\Node\Stmt\Return_ ||
                 $stmt instanceof PhpParser\Node\Stmt\Throw_ ||
-                $stmt instanceof PhpParser\Node\Expr\Exit_
+                ($stmt instanceof PhpParser\Node\Stmt\Expression && $stmt->expr instanceof PhpParser\Node\Expr\Exit_)
             ) {
                 return [self::ACTION_END];
             }

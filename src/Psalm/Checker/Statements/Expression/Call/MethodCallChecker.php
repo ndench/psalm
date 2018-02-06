@@ -84,10 +84,10 @@ class MethodCallChecker extends \Psalm\Checker\Statements\Expression\CallChecker
 
         $has_mock = false;
 
-        if ($class_type && is_string($stmt->name) && $class_type->isNull()) {
+        if ($class_type && $stmt->name instanceof PhpParser\Node\Identifier && $class_type->isNull()) {
             if (IssueBuffer::accepts(
                 new NullReference(
-                    'Cannot call method ' . $stmt->name . ' on null variable ' . $var_id,
+                    'Cannot call method ' . $stmt->name->name . ' on null variable ' . $var_id,
                     new CodeLocation($statements_checker->getSource(), $stmt->var)
                 ),
                 $statements_checker->getSuppressedIssues()
@@ -99,13 +99,13 @@ class MethodCallChecker extends \Psalm\Checker\Statements\Expression\CallChecker
         }
 
         if ($class_type
-            && is_string($stmt->name)
+            && $stmt->name instanceof PhpParser\Node\Identifier
             && $class_type->isNullable()
             && !$class_type->ignore_nullable_issues
         ) {
             if (IssueBuffer::accepts(
                 new PossiblyNullReference(
-                    'Cannot call method ' . $stmt->name . ' on possibly null variable ' . $var_id,
+                    'Cannot call method ' . $stmt->name->name . ' on possibly null variable ' . $var_id,
                     new CodeLocation($statements_checker->getSource(), $stmt->var)
                 ),
                 $statements_checker->getSuppressedIssues()
@@ -115,13 +115,13 @@ class MethodCallChecker extends \Psalm\Checker\Statements\Expression\CallChecker
         }
 
         if ($class_type
-            && is_string($stmt->name)
+            && $stmt->name instanceof PhpParser\Node\Identifier
             && $class_type->isFalsable()
             && !$class_type->ignore_falsable_issues
         ) {
             if (IssueBuffer::accepts(
                 new PossiblyFalseReference(
-                    'Cannot call method ' . $stmt->name . ' on possibly false variable ' . $var_id,
+                    'Cannot call method ' . $stmt->name->name . ' on possibly false variable ' . $var_id,
                     new CodeLocation($statements_checker->getSource(), $stmt->var)
                 ),
                 $statements_checker->getSuppressedIssues()
@@ -144,9 +144,9 @@ class MethodCallChecker extends \Psalm\Checker\Statements\Expression\CallChecker
 
         $returns_by_ref = false;
 
-        if ($class_type && is_string($stmt->name)) {
+        if ($class_type && $stmt->name instanceof PhpParser\Node\Identifier) {
             $return_type = null;
-            $method_name_lc = strtolower($stmt->name);
+            $method_name_lc = strtolower($stmt->name->name);
 
             foreach ($class_type->getTypes() as $class_type_part) {
                 if (!$class_type_part instanceof TNamedObject) {
@@ -285,10 +285,10 @@ class MethodCallChecker extends \Psalm\Checker\Statements\Expression\CallChecker
                 if ($stmt->var instanceof PhpParser\Node\Expr\Variable &&
                     ($context->collect_initializations || $context->collect_mutations) &&
                     $stmt->var->name === 'this' &&
-                    is_string($stmt->name) &&
+                    $stmt->name instanceof PhpParser\Node\Identifier &&
                     $source instanceof FunctionLikeChecker
                 ) {
-                    self::collectSpecialInformation($source, $stmt->name, $context);
+                    self::collectSpecialInformation($source, $stmt->name->name, $context);
                 }
 
                 $class_storage = $project_checker->classlike_storage_provider->get($fq_class_name);
@@ -327,7 +327,7 @@ class MethodCallChecker extends \Psalm\Checker\Statements\Expression\CallChecker
                     return false;
                 }
 
-                switch (strtolower($stmt->name)) {
+                switch (strtolower($stmt->name->name)) {
                     case '__tostring':
                         $return_type = Type::getString();
                         continue;

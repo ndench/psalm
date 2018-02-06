@@ -132,9 +132,9 @@ class FileChecker extends SourceChecker implements StatementsSource
 
         // hoist functions to the top
         foreach ($function_stmts as $stmt) {
-            $function_checkers[$stmt->name] = new FunctionChecker($stmt, $this);
-            $function_id = (string)$function_checkers[$stmt->name]->getMethodId();
-            $this->function_checkers[$function_id] = $function_checkers[$stmt->name];
+            $function_checkers[$stmt->name->name] = new FunctionChecker($stmt, $this);
+            $function_id = (string)$function_checkers[$stmt->name->name]->getMethodId();
+            $this->function_checkers[$function_id] = $function_checkers[$stmt->name->name];
         }
 
         // if there are any leftover statements, evaluate them,
@@ -189,13 +189,13 @@ class FileChecker extends SourceChecker implements StatementsSource
     }
 
     /**
-     * @param  array<int, PhpParser\Node\Expr|PhpParser\Node\Stmt>  $stmts
+     * @param  array<int, PhpParser\Node\Stmt>  $stmts
      *
-     * @return array<int, PhpParser\Node\Expr|PhpParser\Node\Stmt>
+     * @return array<int, PhpParser\Node\Stmt>
      */
     public function populateCheckers(array $stmts)
     {
-        /** @var array<int, PhpParser\Node\Expr|PhpParser\Node\Stmt> */
+        /** @var array<int, PhpParser\Node\Stmt> */
         $leftover_stmts = [];
 
         foreach ($stmts as $stmt) {
@@ -240,13 +240,13 @@ class FileChecker extends SourceChecker implements StatementsSource
         }
 
         if ($stmt instanceof PhpParser\Node\Stmt\Class_) {
-            $class_checker = new ClassChecker($stmt, $this, $stmt->name);
+            $class_checker = new ClassChecker($stmt, $this, $stmt->name->name);
 
             $fq_class_name = $class_checker->getFQCLN();
 
             $this->class_checkers_to_analyze[strtolower($fq_class_name)] = $class_checker;
         } elseif ($stmt instanceof PhpParser\Node\Stmt\Interface_) {
-            $class_checker = new InterfaceChecker($stmt, $this, $stmt->name);
+            $class_checker = new InterfaceChecker($stmt, $this, $stmt->name->name);
 
             $fq_class_name = $class_checker->getFQCLN();
 
